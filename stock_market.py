@@ -28,19 +28,37 @@ def stock_market_menu():
 
             if not symbol:
                 print("\n❌ Please enter a stock symbol.")
-                continue
-
-            company = get_company_data(symbol)
-
-            if company:
-                print("\n========== COMPANY INFORMATION ==========")
-                print(f"Company: {company['name']}")
-                print(f"Current Price: {company['price']}")
-                print(f"Market Cap: {company['market_cap']}")
-                print(f"Sector: {company['sector']}")
-                print(f"Industry: {company['industry']}")
             else:
-                print("\n❌ Could not find company information.")
+                company = get_company_data(symbol)
+
+                if company:
+                    print("\n========== COMPANY SNAPSHOT ==========")
+
+                    print(f"Company: {company['name']}")
+                    print(f"Sector: {company['sector']}")
+                    print(f"Industry: {company['industry']}")
+
+                    print("\n---------- Market Data ----------")
+                    print(f"Current Price: {company['price']}")
+                    print(f"Market Cap: {company['market_cap']}")
+
+                    print("\n---------- Financial Data ----------")
+                    print(f"Revenue: {company['revenue']}")
+                    print(f"Net Income: {company['net_income']}")
+                    print(f"EBIT: {company['ebit']}")
+                    print(f"Total Debt: {company['total_debt']}")
+                    print(f"Shareholders' Equity: {company['equity']}")
+                    print(
+                        f"Operating Cash Flow: "
+                        f"{company['operating_cash_flow']}"
+                    )
+                    print(
+                        f"Free Cash Flow: "
+                        f"{company['free_cash_flow']}"
+                    )
+
+                else:
+                    print("\n❌ Could not retrieve company data.")
 
         elif choice == "3":
             financial_metrics_menu()
