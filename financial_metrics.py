@@ -14,65 +14,153 @@ def financial_metrics_menu():
 
         if choice == "1":
             print("\n📊 EPS - EARNINGS PER SHARE")
-            print("EPS tells us how much profit belongs to each share.")
-            print("\nFormula:")
             print("EPS = Net Profit / Number of Outstanding Shares")
-            print("\nExample:")
-            print("Net Profit = ₹100 crore")
-            print("Shares = 10 crore")
-            print("EPS = ₹10 per share")
+
+            try:
+                net_profit = float(input("\nEnter net profit: ₹"))
+                shares = float(input("Enter number of outstanding shares: "))
+
+                if shares <= 0:
+                    print("\n❌ Number of shares must be greater than zero.")
+                else:
+                    eps = net_profit / shares
+
+                    print(f"\nNet Profit: ₹{net_profit:,.2f}")
+                    print(f"Shares: {shares:,.2f}")
+                    print(f"EPS: ₹{eps:,.2f}")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "2":
             print("\n💰 P/E RATIO - PRICE TO EARNINGS")
-            print("P/E compares a company's share price with its earnings per share.")
-            print("\nFormula:")
-            print("P/E = Share Price / EPS")
-            print("\nExample:")
-            print("Share Price = ₹200")
-            print("EPS = ₹10")
-            print("P/E = 20")
+
+            try:
+                share_price = float(input("\nEnter share price: ₹"))
+                eps = float(input("Enter EPS: ₹"))
+
+                if eps <= 0:
+                    print("\n❌ EPS must be greater than zero.")
+                else:
+                    pe_ratio = share_price / eps
+
+                    print(f"\nShare Price: ₹{share_price:,.2f}")
+                    print(f"EPS: ₹{eps:,.2f}")
+                    print(f"P/E Ratio: {pe_ratio:,.2f}")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "3":
             print("\n📈 ROE - RETURN ON EQUITY")
-            print("ROE shows how efficiently a company generates profit from shareholders' equity.")
-            print("\nFormula:")
-            print("ROE = Net Profit / Shareholders' Equity × 100")
-            print("\nExample:")
-            print("Net Profit = ₹20 crore")
-            print("Equity = ₹100 crore")
-            print("ROE = 20%")
+
+            try:
+                net_profit = float(input("\nEnter net profit: ₹"))
+                equity = float(input("Enter shareholders' equity: ₹"))
+
+                if equity <= 0:
+                    print("\n❌ Equity must be greater than zero.")
+                else:
+                    roe = (net_profit / equity) * 100
+
+                    print(f"\nNet Profit: ₹{net_profit:,.2f}")
+                    print(f"Equity: ₹{equity:,.2f}")
+                    print(f"ROE: {roe:,.2f}%")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "4":
             print("\n🏭 ROCE - RETURN ON CAPITAL EMPLOYED")
-            print("ROCE measures how efficiently a company uses the capital available to it.")
-            print("\nA common formula is:")
-            print("ROCE = EBIT / Capital Employed × 100")
-            print("\nHigher ROCE can indicate more efficient use of capital.")
-            print("It should be compared with companies in the same industry.")
+
+            try:
+                ebit = float(input("\nEnter EBIT: ₹"))
+                capital_employed = float(
+                    input("Enter capital employed: ₹")
+                )
+
+                if capital_employed <= 0:
+                    print("\n❌ Capital employed must be greater than zero.")
+                else:
+                    roce = (ebit / capital_employed) * 100
+
+                    print(f"\nEBIT: ₹{ebit:,.2f}")
+                    print(f"Capital Employed: ₹{capital_employed:,.2f}")
+                    print(f"ROCE: {roce:,.2f}%")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "5":
             print("\n🏦 DEBT-TO-EQUITY RATIO")
-            print("This compares a company's debt with shareholders' equity.")
-            print("\nFormula:")
-            print("Debt-to-Equity = Total Debt / Shareholders' Equity")
-            print("\nExample:")
-            print("Debt = ₹50 crore")
-            print("Equity = ₹100 crore")
-            print("Debt-to-Equity = 0.5")
+
+            try:
+                debt = float(input("\nEnter total debt: ₹"))
+                equity = float(input("Enter shareholders' equity: ₹"))
+
+                if equity <= 0:
+                    print("\n❌ Equity must be greater than zero.")
+                else:
+                    debt_to_equity = debt / equity
+
+                    print(f"\nDebt: ₹{debt:,.2f}")
+                    print(f"Equity: ₹{equity:,.2f}")
+                    print(f"Debt-to-Equity: {debt_to_equity:,.2f}")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "6":
             print("\n📈 REVENUE GROWTH")
-            print("Revenue growth shows how a company's sales change over time.")
-            print("\nFormula:")
-            print("Growth % = (Current Revenue - Previous Revenue)")
-            print("           / Previous Revenue × 100")
+
+            try:
+                previous_revenue = float(
+                    input("\nEnter previous revenue: ₹")
+                )
+                current_revenue = float(
+                    input("Enter current revenue: ₹")
+                )
+
+                if previous_revenue == 0:
+                    print("\n❌ Previous revenue cannot be zero.")
+                else:
+                    growth = (
+                        (current_revenue - previous_revenue)
+                        / previous_revenue
+                    ) * 100
+
+                    print(f"\nPrevious Revenue: ₹{previous_revenue:,.2f}")
+                    print(f"Current Revenue: ₹{current_revenue:,.2f}")
+                    print(f"Revenue Growth: {growth:,.2f}%")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "7":
             print("\n💹 PROFIT GROWTH")
-            print("Profit growth shows how a company's profit changes over time.")
-            print("\nFormula:")
-            print("Growth % = (Current Profit - Previous Profit)")
-            print("           / Previous Profit × 100")
+
+            try:
+                previous_profit = float(
+                    input("\nEnter previous profit: ₹")
+                )
+                current_profit = float(
+                    input("Enter current profit: ₹")
+                )
+
+                if previous_profit == 0:
+                    print("\n❌ Previous profit cannot be zero.")
+                else:
+                    growth = (
+                        (current_profit - previous_profit)
+                        / previous_profit
+                    ) * 100
+
+                    print(f"\nPrevious Profit: ₹{previous_profit:,.2f}")
+                    print(f"Current Profit: ₹{current_profit:,.2f}")
+                    print(f"Profit Growth: {growth:,.2f}%")
+
+            except ValueError:
+                print("\n❌ Please enter numbers only.")
 
         elif choice == "8":
             print("\nReturning to Stock Market...")
