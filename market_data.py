@@ -1,46 +1,66 @@
 import yfinance as yf
-import pandas as pd
 
+
+# ============================================================
+# HELPER FUNCTIONS
+# ============================================================
 
 def get_latest_value(statement, possible_names):
     """
-    Get the latest available value for a financial statement item.
+    Get the latest available numeric value from a financial statement.
     """
+
     if statement is None or statement.empty:
         return None
 
     for name in possible_names:
+
         if name in statement.index:
+
             row = statement.loc[name]
 
             for value in row:
-                if pd.notna(value):
-                    return float(value)
+                if value is not None:
+                    try:
+                        if value == value:  # filters NaN
+                            return float(value)
+                    except (TypeError, ValueError):
+                        continue
 
     return None
 
 
 def get_latest_two_values(statement, possible_names):
     """
-    Get the latest two available values for a financial statement item.
-    Returns:
-        (latest_value, previous_value)
+    Get the latest two available numeric values from a financial statement.
     """
+
     if statement is None or statement.empty:
         return None, None
 
     for name in possible_names:
+
         if name in statement.index:
+
             row = statement.loc[name]
 
             values = []
 
             for value in row:
-                if pd.notna(value):
-                    values.append(float(value))
+                if value is not None:
+                    try:
+                        numeric_value = float(value)
+
+                        if numeric_value == numeric_value:
+                            values.append(numeric_value)
+                    except (TypeError, ValueError):
+                        continue
 
             if len(values) >= 2:
                 return values[0], values[1]
+
+            if len(values) == 1:
+                return values[0], None
 
     return None, None
 
@@ -49,16 +69,21 @@ def calculate_growth(latest, previous):
     """
     Calculate percentage growth between two values.
     """
-    if latest is None or previous in (None, 0):
+
+    if latest is None or previous is None:
         return None
 
-    return ((latest - previous) / previous) * 100
+    if previous == 0:
+        return None
+
+    return ((latest - previous) / abs(previous)) * 100
 
 
 def get_currency_symbol(currency):
     """
-    Convert an ISO currency code into a display symbol.
+    Convert a currency code into a display symbol.
     """
+
     symbols = {
         "INR": "₹",
         "USD": "$",
@@ -72,101 +97,174 @@ def get_currency_symbol(currency):
         "HKD": "HK$",
     }
 
-    return symbols.get(currency, currency)
+    if currency is None:
+        return ""
 
+    return symbols.get(currency.upper(), currency + " ")
+
+
+# ============================================================
+# COMPANY DATA
+# ============================================================
 
 def get_company_data(symbol):
     """
-    Fetch company information, financial data,
-    calculated ratios, growth and currency information.
+    Fetch company information and financial metrics using yfinance.
     """
+
     try:
         ticker = yf.Ticker(symbol)
 
+        # ----------------------------------------------------
+        # BASIC COMPANY INFORMATION
+        # ----------------------------------------------------
+
         info = ticker.info
-        income = ticker.income_stmt
-        balance = ticker.balance_sheet
-        cashflow = ticker.cashflow
 
-        # Listing/trading currency
-        listing_currency = info.get("currency", "N/A")
+        name = info.get("longName") or info.get("shortName") or symbol
 
-        # Currency used for financial statements
-        financial_currency = info.get(
-            "financialCurrency",
-            listing_currency
+        price = info.get("currentPrice")
+
+        # Fallback for current price
+        if price is None:
+            try:
+                fast_info = ticker.fast_info
+                price = fast_info.get("last_price")
+            except Exception:
+                price = None
+
+        market_cap = info.get("marketCap")
+
+        sector = info.get("sector", "N/A")
+        industry = info.get("industry", "N/A")
+
+        # ----------------------------------------------------
+        # CURRENCIES
+        # ----------------------------------------------------
+
+        listing_currency = info.get("currency") or "USD"
+
+        financial_currency = (
+            info.get("financialCurrency")
+            or listing_currency
         )
 
-        company_data = {
-            "name": info.get("longName", "Not available"),
-            "price": info.get("currentPrice"),
-            "market_cap": info.get("marketCap"),
-            "sector": info.get("sector", "Not available"),
-            "industry": info.get("industry", "Not available"),
+        price_symbol = get_currency_symbol(listing_currency)
 
-            "listing_currency": listing_currency,
-            "financial_currency": financial_currency,
+        financial_symbol = get_currency_symbol(financial_currency)
 
-            "price_symbol": get_currency_symbol(listing_currency),
-            "financial_symbol": get_currency_symbol(financial_currency),
+        # ----------------------------------------------------
+        # FINANCIAL STATEMENTS
+        # ----------------------------------------------------
 
-            "revenue": get_latest_value(
-                income,
-                [
-                    "Total Revenue",
-                    "Operating Revenue"
-                ]
-            ),
+        try:
+            income = ticker.financials
+        except Exception:
+            income = None
 
-            "net_income": get_latest_value(
-                income,
-                [
-                    "Net Income",
-                    "Net Income Common Stockholders"
-                ]
-            ),
+        try:
+            balance = ticker.balance_sheet
+        except Exception:
+            balance = None
 
-            "ebit": get_latest_value(
-                income,
-                [
-                    "EBIT",
-                    "Operating Income"
-                ]
-            ),
+        try:
+            cashflow = ticker.cashflow
+        except Exception:
+            cashflow = None
 
-            "total_debt": get_latest_value(
-                balance,
-                ["Total Debt"]
-            ),
+        # ----------------------------------------------------
+        # REVENUE
+        # ----------------------------------------------------
 
-            "equity": get_latest_value(
-                balance,
-                [
-                    "Stockholders Equity",
-                    "Common Stock Equity",
-                    "Total Equity Gross Minority Interest"
-                ]
-            ),
+        revenue = get_latest_value(
+            income,
+            [
+                "Total Revenue",
+                "Operating Revenue"
+            ]
+        )
 
-            "operating_cash_flow": get_latest_value(
-                cashflow,
-                [
-                    "Operating Cash Flow",
-                    "Total Cash From Operating Activities"
-                ]
-            ),
+        # ----------------------------------------------------
+        # NET INCOME
+        # ----------------------------------------------------
 
-            "free_cash_flow": get_latest_value(
-                cashflow,
-                ["Free Cash Flow"]
-            ),
+        net_income = get_latest_value(
+            income,
+            [
+                "Net Income",
+                "Net Income Common Stockholders"
+            ]
+        )
 
-            "eps": info.get("trailingEps")
-        }
+        # ----------------------------------------------------
+        # EBIT
+        # ----------------------------------------------------
 
-        # -------------------------------
-        # Revenue Growth
-        # -------------------------------
+        ebit = get_latest_value(
+            income,
+            [
+                "EBIT",
+                "Operating Income"
+            ]
+        )
+
+        # ----------------------------------------------------
+        # TOTAL DEBT
+        # ----------------------------------------------------
+
+        total_debt = get_latest_value(
+            balance,
+            [
+                "Total Debt"
+            ]
+        )
+
+        # ----------------------------------------------------
+        # EQUITY
+        # ----------------------------------------------------
+
+        equity = get_latest_value(
+            balance,
+            [
+                "Stockholders Equity",
+                "Common Stock Equity",
+                "Total Equity Gross Minority Interest"
+            ]
+        )
+
+        # ----------------------------------------------------
+        # OPERATING CASH FLOW
+        # ----------------------------------------------------
+
+        operating_cash_flow = get_latest_value(
+            cashflow,
+            [
+                "Operating Cash Flow",
+                "Total Cash From Operating Activities"
+            ]
+        )
+
+        # ----------------------------------------------------
+        # FREE CASH FLOW
+        # ----------------------------------------------------
+
+        free_cash_flow = get_latest_value(
+            cashflow,
+            [
+                "Free Cash Flow"
+            ]
+        )
+
+        # ----------------------------------------------------
+        # EPS
+        # ----------------------------------------------------
+
+        eps = info.get("trailingEps")
+
+        # ----------------------------------------------------
+        # REVENUE GROWTH
+        # ----------------------------------------------------
+
         latest_revenue, previous_revenue = get_latest_two_values(
             income,
             [
@@ -175,14 +273,15 @@ def get_company_data(symbol):
             ]
         )
 
-        company_data["revenue_growth"] = calculate_growth(
+        revenue_growth = calculate_growth(
             latest_revenue,
             previous_revenue
         )
 
-        # -------------------------------
-        # Profit Growth
-        # -------------------------------
+        # ----------------------------------------------------
+        # PROFIT GROWTH
+        # ----------------------------------------------------
+
         latest_profit, previous_profit = get_latest_two_values(
             income,
             [
@@ -191,80 +290,140 @@ def get_company_data(symbol):
             ]
         )
 
-        company_data["profit_growth"] = calculate_growth(
+        profit_growth = calculate_growth(
             latest_profit,
             previous_profit
         )
 
-        # -------------------------------
-        # P/E Ratio
-        # -------------------------------
-        if (
-            company_data["price"] is not None
-            and company_data["eps"] is not None
-            and company_data["eps"] > 0
-        ):
-            company_data["pe_ratio"] = (
-                company_data["price"]
-                / company_data["eps"]
-            )
-        else:
-            company_data["pe_ratio"] = None
+        # ----------------------------------------------------
+        # P/E RATIO
+        # ----------------------------------------------------
 
-        # -------------------------------
-        # ROE
-        # -------------------------------
         if (
-            company_data["net_income"] is not None
-            and company_data["equity"] not in (None, 0)
+            price is not None
+            and eps is not None
+            and eps > 0
         ):
-            company_data["roe"] = (
-                company_data["net_income"]
-                / company_data["equity"]
+            pe_ratio = price / eps
+        else:
+            pe_ratio = None
+
+        # ----------------------------------------------------
+        # ROE
+        # ----------------------------------------------------
+
+        if (
+            net_income is not None
+            and equity is not None
+            and equity != 0
+        ):
+            roe = (net_income / equity) * 100
+        else:
+            roe = None
+
+        # ----------------------------------------------------
+        # ROCE
+        # Simplified educational calculation
+        # ----------------------------------------------------
+
+        if (
+            ebit is not None
+            and equity is not None
+            and total_debt is not None
+            and (equity + total_debt) != 0
+        ):
+            roce = (
+                ebit / (equity + total_debt)
             ) * 100
         else:
-            company_data["roe"] = None
+            roce = None
 
-        # -------------------------------
-        # ROCE
-        # Simplified educational version
-        # -------------------------------
+        # ----------------------------------------------------
+        # DEBT TO EQUITY
+        # ----------------------------------------------------
+
         if (
-            company_data["ebit"] is not None
-            and company_data["equity"] is not None
+            total_debt is not None
+            and equity is not None
+            and equity != 0
         ):
-            debt = company_data["total_debt"] or 0
-
-            capital_employed = (
-                company_data["equity"] + debt
-            )
-
-            if capital_employed > 0:
-                company_data["roce"] = (
-                    company_data["ebit"]
-                    / capital_employed
-                ) * 100
-            else:
-                company_data["roce"] = None
+            debt_to_equity = total_debt / equity
         else:
-            company_data["roce"] = None
+            debt_to_equity = None
 
-        # -------------------------------
-        # Debt-to-Equity
-        # -------------------------------
-        if (
-            company_data["total_debt"] is not None
-            and company_data["equity"] not in (None, 0)
-        ):
-            company_data["debt_to_equity"] = (
-                company_data["total_debt"]
-                / company_data["equity"]
-            )
-        else:
-            company_data["debt_to_equity"] = None
+        # ----------------------------------------------------
+        # RETURN DATA
+        # ----------------------------------------------------
+
+        company_data = {
+            "name": name,
+            "price": price,
+            "market_cap": market_cap,
+            "sector": sector,
+            "industry": industry,
+
+            "listing_currency": listing_currency,
+            "financial_currency": financial_currency,
+
+            "price_symbol": price_symbol,
+            "financial_symbol": financial_symbol,
+
+            "revenue": revenue,
+            "net_income": net_income,
+            "ebit": ebit,
+
+            "total_debt": total_debt,
+            "equity": equity,
+
+            "operating_cash_flow": operating_cash_flow,
+            "free_cash_flow": free_cash_flow,
+
+            "eps": eps,
+            "pe_ratio": pe_ratio,
+
+            "roe": roe,
+            "roce": roce,
+            "debt_to_equity": debt_to_equity,
+
+            "revenue_growth": revenue_growth,
+            "profit_growth": profit_growth
+        }
 
         return company_data
 
-    except Exception as error:
-        print(f"\n❌ Could not fetch company data: {error}")
+    except Exception as e:
+
+        print(f"Error retrieving company data: {e}")
+
+        return None
+
+
+# ============================================================
+# HISTORICAL PRICE DATA
+# ============================================================
+
+def get_price_history(symbol, period="1y"):
+    """
+    Fetch historical closing prices for a stock.
+    """
+
+    try:
+        ticker = yf.Ticker(symbol)
+
+        history = ticker.history(
+            period=period,
+            auto_adjust=False
+        )
+
+        if history.empty:
+            return None
+
+        return history[["Close"]]
+
+    except Exception as e:
+
+        print(
+            f"Error fetching price history: {e}"
+        )
+
         return None
