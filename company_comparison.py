@@ -1,20 +1,20 @@
 from market_data import get_company_data
 
 
-def format_number(value):
-    """Format large financial values."""
+def format_number(value, symbol):
+    """Format large financial values with a currency symbol."""
     if value is None:
         return "N/A"
 
-    return f"₹{value:,.0f}"
+    return f"{symbol}{value:,.0f}"
 
 
-def format_price(value):
+def format_price(value, symbol):
     """Format share price."""
     if value is None:
         return "N/A"
 
-    return f"₹{value:,.2f}"
+    return f"{symbol}{value:,.2f}"
 
 
 def format_ratio(value):
@@ -59,6 +59,12 @@ def compare_companies():
         print("\n❌ Could not retrieve data for both companies.")
         return
 
+    currency1 = company1["financial_symbol"]
+    currency2 = company2["financial_symbol"]
+
+    price_symbol1 = company1["price_symbol"]
+    price_symbol2 = company2["price_symbol"]
+
     print("\n========== SIDE-BY-SIDE COMPARISON ==========")
 
     print(f"\n{'Metric':<25} {symbol1:<22} {symbol2:<22}")
@@ -76,50 +82,58 @@ def compare_companies():
         f"{company2['sector']:<22}"
     )
 
+    print("\n---------- Market Data ----------")
+
     print(
         f"{'Current Price':<25} "
-        f"{format_price(company1['price']):<22} "
-        f"{format_price(company2['price']):<22}"
+        f"{format_price(company1['price'], price_symbol1):<22} "
+        f"{format_price(company2['price'], price_symbol2):<22}"
     )
 
     print(
         f"{'Market Cap':<25} "
-        f"{format_number(company1['market_cap']):<22} "
-        f"{format_number(company2['market_cap']):<22}"
+        f"{format_number(company1['market_cap'], price_symbol1):<22} "
+        f"{format_number(company2['market_cap'], price_symbol2):<22}"
     )
 
     print("\n---------- Financial Data ----------")
 
     print(
+        f"{'Financial Currency':<25} "
+        f"{company1['financial_currency']:<22} "
+        f"{company2['financial_currency']:<22}"
+    )
+
+    print(
         f"{'Revenue':<25} "
-        f"{format_number(company1['revenue']):<22} "
-        f"{format_number(company2['revenue']):<22}"
+        f"{format_number(company1['revenue'], currency1):<22} "
+        f"{format_number(company2['revenue'], currency2):<22}"
     )
 
     print(
         f"{'Net Income':<25} "
-        f"{format_number(company1['net_income']):<22} "
-        f"{format_number(company2['net_income']):<22}"
+        f"{format_number(company1['net_income'], currency1):<22} "
+        f"{format_number(company2['net_income'], currency2):<22}"
     )
 
     print(
         f"{'Total Debt':<25} "
-        f"{format_number(company1['total_debt']):<22} "
-        f"{format_number(company2['total_debt']):<22}"
+        f"{format_number(company1['total_debt'], currency1):<22} "
+        f"{format_number(company2['total_debt'], currency2):<22}"
     )
 
     print(
         f"{'Equity':<25} "
-        f"{format_number(company1['equity']):<22} "
-        f"{format_number(company2['equity']):<22}"
+        f"{format_number(company1['equity'], currency1):<22} "
+        f"{format_number(company2['equity'], currency2):<22}"
     )
 
     print("\n---------- Valuation & Ratios ----------")
 
     print(
         f"{'Trailing EPS':<25} "
-        f"{format_price(company1['eps']):<22} "
-        f"{format_price(company2['eps']):<22}"
+        f"{format_price(company1['eps'], price_symbol1):<22} "
+        f"{format_price(company2['eps'], price_symbol2):<22}"
     )
 
     print(
@@ -160,5 +174,12 @@ def compare_companies():
         f"{format_percent(company2['profit_growth']):<22}"
     )
 
-    print("\nNote: Values are shown for research and educational comparison.")
-    print("Metrics should be interpreted using industry and historical context.")
+    print(
+        "\nNote: Financial statement values are shown "
+        "in each company's reporting currency."
+    )
+
+    print(
+        "Direct comparison of monetary amounts across "
+        "different currencies requires currency conversion."
+    )

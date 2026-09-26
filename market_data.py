@@ -55,10 +55,30 @@ def calculate_growth(latest, previous):
     return ((latest - previous) / previous) * 100
 
 
+def get_currency_symbol(currency):
+    """
+    Convert an ISO currency code into a display symbol.
+    """
+    symbols = {
+        "INR": "₹",
+        "USD": "$",
+        "EUR": "€",
+        "GBP": "£",
+        "JPY": "¥",
+        "CNY": "¥",
+        "AUD": "A$",
+        "CAD": "C$",
+        "SGD": "S$",
+        "HKD": "HK$",
+    }
+
+    return symbols.get(currency, currency)
+
+
 def get_company_data(symbol):
     """
     Fetch company information, financial data,
-    and calculated financial ratios.
+    calculated ratios, growth and currency information.
     """
     try:
         ticker = yf.Ticker(symbol)
@@ -68,24 +88,28 @@ def get_company_data(symbol):
         balance = ticker.balance_sheet
         cashflow = ticker.cashflow
 
-        # -------------------------------
-        # Basic company information
-        # -------------------------------
-        price = info.get("currentPrice")
+        # Listing/trading currency
+        listing_currency = info.get("currency", "N/A")
 
-        if price is None:
-            price = info.get("regularMarketPrice")
+        # Currency used for financial statements
+        financial_currency = info.get(
+            "financialCurrency",
+            listing_currency
+        )
 
         company_data = {
             "name": info.get("longName", "Not available"),
-            "price": price,
+            "price": info.get("currentPrice"),
             "market_cap": info.get("marketCap"),
             "sector": info.get("sector", "Not available"),
             "industry": info.get("industry", "Not available"),
 
-            # -------------------------------
-            # Financial statement data
-            # -------------------------------
+            "listing_currency": listing_currency,
+            "financial_currency": financial_currency,
+
+            "price_symbol": get_currency_symbol(listing_currency),
+            "financial_symbol": get_currency_symbol(financial_currency),
+
             "revenue": get_latest_value(
                 income,
                 [
