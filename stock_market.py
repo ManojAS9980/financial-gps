@@ -1,6 +1,7 @@
 from financial_metrics import financial_metrics_menu
 from market_data import get_company_data
 from metric_explanations import show_metric_explanations
+from company_comparison import compare_companies
 
 
 def stock_market_menu():
@@ -123,9 +124,7 @@ def stock_market_menu():
                             f"₹{company['free_cash_flow']:,.0f}"
                         )
                     else:
-                        print(
-                            "Free Cash Flow: Not available"
-                        )
+                        print("Free Cash Flow: Not available")
 
                     print(
                         "\n---------- Valuation & Ratios ----------"
@@ -181,9 +180,7 @@ def stock_market_menu():
                             f"{company['revenue_growth']:.2f}%"
                         )
                     else:
-                        print(
-                            "Revenue Growth: Not available"
-                        )
+                        print("Revenue Growth: Not available")
 
                     if company["profit_growth"] is not None:
                         print(
@@ -191,11 +188,8 @@ def stock_market_menu():
                             f"{company['profit_growth']:.2f}%"
                         )
                     else:
-                        print(
-                            "Profit Growth: Not available"
-                        )
+                        print("Profit Growth: Not available")
 
-                    # Beginner-friendly explanations
                     show_metric_explanations(company)
 
                 else:
@@ -215,11 +209,7 @@ def stock_market_menu():
             print("- PEG Ratio")
 
         elif choice == "5":
-            print("\n⚖️ COMPARE COMPANIES")
-            print(
-                "Company comparison will be added "
-                "in a future version."
-            )
+            compare_companies()
 
         elif choice == "6":
             print("\nReturning to Main Menu...")
