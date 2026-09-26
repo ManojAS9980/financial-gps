@@ -20,10 +20,45 @@ def get_latest_value(statement, possible_names):
     return None
 
 
+def get_latest_two_values(statement, possible_names):
+    """
+    Get the latest two available values for a financial statement item.
+    Returns:
+        (latest_value, previous_value)
+    """
+    if statement is None or statement.empty:
+        return None, None
+
+    for name in possible_names:
+        if name in statement.index:
+            row = statement.loc[name]
+
+            values = []
+
+            for value in row:
+                if pd.notna(value):
+                    values.append(float(value))
+
+            if len(values) >= 2:
+                return values[0], values[1]
+
+    return None, None
+
+
+def calculate_growth(latest, previous):
+    """
+    Calculate percentage growth between two values.
+    """
+    if latest is None or previous in (None, 0):
+        return None
+
+    return ((latest - previous) / previous) * 100
+
+
 def get_company_data(symbol):
     """
     Fetch company information, financial data,
-    and basic calculated financial ratios.
+    and calculated financial ratios.
     """
     try:
         ticker = yf.Ticker(symbol)
@@ -53,7 +88,10 @@ def get_company_data(symbol):
             # -------------------------------
             "revenue": get_latest_value(
                 income,
-                ["Total Revenue", "Operating Revenue"]
+                [
+                    "Total Revenue",
+                    "Operating Revenue"
+                ]
             ),
 
             "net_income": get_latest_value(
@@ -66,7 +104,10 @@ def get_company_data(symbol):
 
             "ebit": get_latest_value(
                 income,
-                ["EBIT", "Operating Income"]
+                [
+                    "EBIT",
+                    "Operating Income"
+                ]
             ),
 
             "total_debt": get_latest_value(
@@ -96,12 +137,43 @@ def get_company_data(symbol):
                 ["Free Cash Flow"]
             ),
 
-            # Yahoo Finance trailing EPS
             "eps": info.get("trailingEps")
         }
 
         # -------------------------------
-        # Calculate P/E from Price / EPS
+        # Revenue Growth
+        # -------------------------------
+        latest_revenue, previous_revenue = get_latest_two_values(
+            income,
+            [
+                "Total Revenue",
+                "Operating Revenue"
+            ]
+        )
+
+        company_data["revenue_growth"] = calculate_growth(
+            latest_revenue,
+            previous_revenue
+        )
+
+        # -------------------------------
+        # Profit Growth
+        # -------------------------------
+        latest_profit, previous_profit = get_latest_two_values(
+            income,
+            [
+                "Net Income",
+                "Net Income Common Stockholders"
+            ]
+        )
+
+        company_data["profit_growth"] = calculate_growth(
+            latest_profit,
+            previous_profit
+        )
+
+        # -------------------------------
+        # P/E Ratio
         # -------------------------------
         if (
             company_data["price"] is not None
@@ -116,7 +188,7 @@ def get_company_data(symbol):
             company_data["pe_ratio"] = None
 
         # -------------------------------
-        # Calculate ROE
+        # ROE
         # -------------------------------
         if (
             company_data["net_income"] is not None
@@ -130,7 +202,7 @@ def get_company_data(symbol):
             company_data["roe"] = None
 
         # -------------------------------
-        # Calculate ROCE
+        # ROCE
         # Simplified educational version
         # -------------------------------
         if (
@@ -154,7 +226,7 @@ def get_company_data(symbol):
             company_data["roce"] = None
 
         # -------------------------------
-        # Calculate Debt-to-Equity
+        # Debt-to-Equity
         # -------------------------------
         if (
             company_data["total_debt"] is not None

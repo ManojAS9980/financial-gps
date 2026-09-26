@@ -17,7 +17,10 @@ def stock_market_menu():
         if choice == "1":
             print("\n📈 WHAT IS A STOCK?")
             print("A stock represents ownership in a company.")
-            print("When you buy a stock, you own a small part of that company.")
+            print(
+                "When you buy a stock, you own a small "
+                "part of that company."
+            )
 
         elif choice == "2":
             print("\n🔎 COMPANY RESEARCH")
@@ -33,7 +36,9 @@ def stock_market_menu():
                 company = get_company_data(symbol)
 
                 if company:
-                    print("\n========== COMPANY SNAPSHOT ==========")
+                    print(
+                        "\n========== COMPANY SNAPSHOT =========="
+                    )
 
                     print(f"Company: {company['name']}")
                     print(f"Sector: {company['sector']}")
@@ -42,7 +47,10 @@ def stock_market_menu():
                     print("\n---------- Market Data ----------")
 
                     if company["price"] is not None:
-                        print(f"Current Price: ₹{company['price']:,.2f}")
+                        print(
+                            f"Current Price: "
+                            f"₹{company['price']:,.2f}"
+                        )
                     else:
                         print("Current Price: Not available")
 
@@ -94,7 +102,10 @@ def stock_market_menu():
                             f"₹{company['equity']:,.0f}"
                         )
                     else:
-                        print("Shareholders' Equity: Not available")
+                        print(
+                            "Shareholders' Equity: "
+                            "Not available"
+                        )
 
                     if company["operating_cash_flow"] is not None:
                         print(
@@ -113,9 +124,14 @@ def stock_market_menu():
                             f"₹{company['free_cash_flow']:,.0f}"
                         )
                     else:
-                        print("Free Cash Flow: Not available")
+                        print(
+                            "Free Cash Flow: "
+                            "Not available"
+                        )
 
-                    print("\n---------- Valuation & Ratios ----------")
+                    print(
+                        "\n---------- Valuation & Ratios ----------"
+                    )
 
                     if company["eps"] is not None:
                         print(
@@ -163,8 +179,34 @@ def stock_market_menu():
                             "Not available"
                         )
 
+                    print("\n---------- Growth ----------")
+
+                    if company["revenue_growth"] is not None:
+                        print(
+                            f"Revenue Growth: "
+                            f"{company['revenue_growth']:.2f}%"
+                        )
+                    else:
+                        print(
+                            "Revenue Growth: "
+                            "Not available"
+                        )
+
+                    if company["profit_growth"] is not None:
+                        print(
+                            f"Profit Growth: "
+                            f"{company['profit_growth']:.2f}%"
+                        )
+                    else:
+                        print(
+                            "Profit Growth: "
+                            "Not available"
+                        )
+
                 else:
-                    print("\n❌ Could not retrieve company data.")
+                    print(
+                        "\n❌ Could not retrieve company data."
+                    )
 
         elif choice == "3":
             financial_metrics_menu()
@@ -189,4 +231,6 @@ def stock_market_menu():
             break
 
         else:
-            print("\n❌ Invalid option. Please choose 1-6.")
+            print(
+                "\n❌ Invalid option. Please choose 1-6."
+            )
