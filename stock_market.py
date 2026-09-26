@@ -1,5 +1,6 @@
 from financial_metrics import financial_metrics_menu
 from market_data import get_company_data
+from metric_explanations import show_metric_explanations
 
 
 def stock_market_menu():
@@ -18,8 +19,8 @@ def stock_market_menu():
             print("\n📈 WHAT IS A STOCK?")
             print("A stock represents ownership in a company.")
             print(
-                "When you buy a stock, you own a small "
-                "part of that company."
+                "When you buy a stock, you own a small part "
+                "of that company."
             )
 
         elif choice == "2":
@@ -103,8 +104,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Shareholders' Equity: "
-                            "Not available"
+                            "Shareholders' Equity: Not available"
                         )
 
                     if company["operating_cash_flow"] is not None:
@@ -114,8 +114,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Operating Cash Flow: "
-                            "Not available"
+                            "Operating Cash Flow: Not available"
                         )
 
                     if company["free_cash_flow"] is not None:
@@ -125,8 +124,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Free Cash Flow: "
-                            "Not available"
+                            "Free Cash Flow: Not available"
                         )
 
                     print(
@@ -147,10 +145,7 @@ def stock_market_menu():
                             f"{company['pe_ratio']:,.2f}"
                         )
                     else:
-                        print(
-                            "Trailing P/E: "
-                            "Not available"
-                        )
+                        print("Trailing P/E: Not available")
 
                     if company["roe"] is not None:
                         print(
@@ -175,8 +170,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Debt-to-Equity: "
-                            "Not available"
+                            "Debt-to-Equity: Not available"
                         )
 
                     print("\n---------- Growth ----------")
@@ -188,8 +182,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Revenue Growth: "
-                            "Not available"
+                            "Revenue Growth: Not available"
                         )
 
                     if company["profit_growth"] is not None:
@@ -199,9 +192,11 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Profit Growth: "
-                            "Not available"
+                            "Profit Growth: Not available"
                         )
+
+                    # Beginner-friendly explanations
+                    show_metric_explanations(company)
 
                 else:
                     print(
