@@ -40,36 +40,115 @@ def stock_market_menu():
                     print(f"Industry: {company['industry']}")
 
                     print("\n---------- Market Data ----------")
-                    print(f"Current Price: {company['price']}")
-                    print(f"Market Cap: {company['market_cap']}")
+
+                    if company["price"] is not None:
+                        print(f"Current Price: ₹{company['price']:,.2f}")
+                    else:
+                        print("Current Price: Not available")
+
+                    if company["market_cap"] is not None:
+                        print(
+                            f"Market Cap: "
+                            f"₹{company['market_cap']:,.0f}"
+                        )
+                    else:
+                        print("Market Cap: Not available")
 
                     print("\n---------- Financial Data ----------")
-                    print(f"Revenue: {company['revenue']}")
-                    print(f"Net Income: {company['net_income']}")
-                    print(f"EBIT: {company['ebit']}")
-                    print(f"Total Debt: {company['total_debt']}")
-                    print(
-                        f"Shareholders' Equity: "
-                        f"{company['equity']}"
-                    )
-                    print(
-                        f"Operating Cash Flow: "
-                        f"{company['operating_cash_flow']}"
-                    )
-                    print(
-                        f"Free Cash Flow: "
-                        f"{company['free_cash_flow']}"
-                    )
 
-                    print("\n---------- Calculated Ratios ----------")
+                    if company["revenue"] is not None:
+                        print(
+                            f"Revenue: "
+                            f"₹{company['revenue']:,.0f}"
+                        )
+                    else:
+                        print("Revenue: Not available")
+
+                    if company["net_income"] is not None:
+                        print(
+                            f"Net Income: "
+                            f"₹{company['net_income']:,.0f}"
+                        )
+                    else:
+                        print("Net Income: Not available")
+
+                    if company["ebit"] is not None:
+                        print(
+                            f"EBIT: "
+                            f"₹{company['ebit']:,.0f}"
+                        )
+                    else:
+                        print("EBIT: Not available")
+
+                    if company["total_debt"] is not None:
+                        print(
+                            f"Total Debt: "
+                            f"₹{company['total_debt']:,.0f}"
+                        )
+                    else:
+                        print("Total Debt: Not available")
+
+                    if company["equity"] is not None:
+                        print(
+                            f"Shareholders' Equity: "
+                            f"₹{company['equity']:,.0f}"
+                        )
+                    else:
+                        print("Shareholders' Equity: Not available")
+
+                    if company["operating_cash_flow"] is not None:
+                        print(
+                            f"Operating Cash Flow: "
+                            f"₹{company['operating_cash_flow']:,.0f}"
+                        )
+                    else:
+                        print(
+                            "Operating Cash Flow: "
+                            "Not available"
+                        )
+
+                    if company["free_cash_flow"] is not None:
+                        print(
+                            f"Free Cash Flow: "
+                            f"₹{company['free_cash_flow']:,.0f}"
+                        )
+                    else:
+                        print("Free Cash Flow: Not available")
+
+                    print("\n---------- Valuation & Ratios ----------")
+
+                    if company["eps"] is not None:
+                        print(
+                            f"Trailing EPS: "
+                            f"₹{company['eps']:,.2f}"
+                        )
+                    else:
+                        print("Trailing EPS: Not available")
+
+                    if company["pe_ratio"] is not None:
+                        print(
+                            f"Trailing P/E: "
+                            f"{company['pe_ratio']:,.2f}"
+                        )
+                    else:
+                        print(
+                            "Trailing P/E: "
+                            "Not available"
+                        )
 
                     if company["roe"] is not None:
-                        print(f"ROE: {company['roe']:.2f}%")
+                        print(
+                            f"ROE: "
+                            f"{company['roe']:.2f}%"
+                        )
                     else:
                         print("ROE: Not available")
 
                     if company["roce"] is not None:
-                        print(f"ROCE: {company['roce']:.2f}%")
+                        print(
+                            f"ROCE: "
+                            f"{company['roce']:.2f}%"
+                        )
                     else:
                         print("ROCE: Not available")
 
@@ -79,7 +158,10 @@ def stock_market_menu():
                             f"{company['debt_to_equity']:.2f}"
                         )
                     else:
-                        print("Debt-to-Equity: Not available")
+                        print(
+                            "Debt-to-Equity: "
+                            "Not available"
+                        )
 
                 else:
                     print("\n❌ Could not retrieve company data.")

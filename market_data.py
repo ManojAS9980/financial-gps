@@ -22,7 +22,7 @@ def get_latest_value(statement, possible_names):
 
 def get_company_data(symbol):
     """
-    Fetch company information, financial statement data,
+    Fetch company information, financial data,
     and basic calculated financial ratios.
     """
     try:
@@ -33,13 +33,24 @@ def get_company_data(symbol):
         balance = ticker.balance_sheet
         cashflow = ticker.cashflow
 
+        # -------------------------------
+        # Basic company information
+        # -------------------------------
+        price = info.get("currentPrice")
+
+        if price is None:
+            price = info.get("regularMarketPrice")
+
         company_data = {
             "name": info.get("longName", "Not available"),
-            "price": info.get("currentPrice"),
+            "price": price,
             "market_cap": info.get("marketCap"),
             "sector": info.get("sector", "Not available"),
             "industry": info.get("industry", "Not available"),
 
+            # -------------------------------
+            # Financial statement data
+            # -------------------------------
             "revenue": get_latest_value(
                 income,
                 ["Total Revenue", "Operating Revenue"]
@@ -55,10 +66,7 @@ def get_company_data(symbol):
 
             "ebit": get_latest_value(
                 income,
-                [
-                    "EBIT",
-                    "Operating Income"
-                ]
+                ["EBIT", "Operating Income"]
             ),
 
             "total_debt": get_latest_value(
@@ -86,8 +94,26 @@ def get_company_data(symbol):
             "free_cash_flow": get_latest_value(
                 cashflow,
                 ["Free Cash Flow"]
-            )
+            ),
+
+            # Yahoo Finance trailing EPS
+            "eps": info.get("trailingEps")
         }
+
+        # -------------------------------
+        # Calculate P/E from Price / EPS
+        # -------------------------------
+        if (
+            company_data["price"] is not None
+            and company_data["eps"] is not None
+            and company_data["eps"] > 0
+        ):
+            company_data["pe_ratio"] = (
+                company_data["price"]
+                / company_data["eps"]
+            )
+        else:
+            company_data["pe_ratio"] = None
 
         # -------------------------------
         # Calculate ROE
@@ -105,6 +131,7 @@ def get_company_data(symbol):
 
         # -------------------------------
         # Calculate ROCE
+        # Simplified educational version
         # -------------------------------
         if (
             company_data["ebit"] is not None
