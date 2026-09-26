@@ -3,6 +3,7 @@ from market_data import get_company_data
 from metric_explanations import show_metric_explanations
 from company_comparison import compare_companies
 from historical_analysis import show_historical_trends
+from risk_analysis import show_risk_analysis
 
 
 def stock_market_menu():
@@ -14,9 +15,10 @@ def stock_market_menu():
         print("4. Valuation Basics")
         print("5. Compare Companies")
         print("6. Historical Trends")
-        print("7. Back to Main Menu")
+        print("7. Risk & Financial Health")
+        print("8. Back to Main Menu")
 
-        choice = input("\nChoose an option (1-7): ").strip()
+        choice = input("\nChoose an option (1-8): ").strip()
 
         if choice == "1":
             print("\n📈 WHAT IS A STOCK?")
@@ -35,7 +37,6 @@ def stock_market_menu():
 
             if not symbol:
                 print("\n❌ Please enter a stock symbol.")
-
             else:
                 company = get_company_data(symbol)
 
@@ -53,7 +54,7 @@ def stock_market_menu():
                     if company["price"] is not None:
                         print(
                             f"Current Price: "
-                            f"₹{company['price']:,.2f}"
+                            f"{company['price']:,.2f}"
                         )
                     else:
                         print("Current Price: Not available")
@@ -61,7 +62,8 @@ def stock_market_menu():
                     if company["market_cap"] is not None:
                         print(
                             f"Market Cap: "
-                            f"₹{company['market_cap']:,.0f}"
+                            f"{company['price_symbol']}"
+                            f"{company['market_cap']:,.0f}"
                         )
                     else:
                         print("Market Cap: Not available")
@@ -112,8 +114,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Shareholders' Equity: "
-                            "Not available"
+                            "Shareholders' Equity: Not available"
                         )
 
                     if company["operating_cash_flow"] is not None:
@@ -124,8 +125,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Operating Cash Flow: "
-                            "Not available"
+                            "Operating Cash Flow: Not available"
                         )
 
                     if company["free_cash_flow"] is not None:
@@ -135,10 +135,7 @@ def stock_market_menu():
                             f"{company['free_cash_flow']:,.0f}"
                         )
                     else:
-                        print(
-                            "Free Cash Flow: "
-                            "Not available"
-                        )
+                        print("Free Cash Flow: Not available")
 
                     print(
                         "\n---------- Valuation & Ratios ----------"
@@ -156,26 +153,21 @@ def stock_market_menu():
                     if company["pe_ratio"] is not None:
                         print(
                             f"Trailing P/E: "
-                            f"{company['pe_ratio']:,.2f}"
+                            f"{company['pe_ratio']:.2f}"
                         )
                     else:
-                        print(
-                            "Trailing P/E: "
-                            "Not available"
-                        )
+                        print("Trailing P/E: Not available")
 
                     if company["roe"] is not None:
                         print(
-                            f"ROE: "
-                            f"{company['roe']:.2f}%"
+                            f"ROE: {company['roe']:.2f}%"
                         )
                     else:
                         print("ROE: Not available")
 
                     if company["roce"] is not None:
                         print(
-                            f"ROCE: "
-                            f"{company['roce']:.2f}%"
+                            f"ROCE: {company['roce']:.2f}%"
                         )
                     else:
                         print("ROCE: Not available")
@@ -187,8 +179,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Debt-to-Equity: "
-                            "Not available"
+                            "Debt-to-Equity: Not available"
                         )
 
                     print("\n---------- Growth ----------")
@@ -200,8 +191,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Revenue Growth: "
-                            "Not available"
+                            "Revenue Growth: Not available"
                         )
 
                     if company["profit_growth"] is not None:
@@ -211,8 +201,7 @@ def stock_market_menu():
                         )
                     else:
                         print(
-                            "Profit Growth: "
-                            "Not available"
+                            "Profit Growth: Not available"
                         )
 
                     show_metric_explanations(company)
@@ -249,10 +238,32 @@ def stock_market_menu():
                 show_historical_trends(symbol)
 
         elif choice == "7":
+            print("\n🛡️ RISK & FINANCIAL HEALTH")
+
+            symbol = input(
+                "Enter stock symbol (example: TCS.NS): "
+            ).strip().upper()
+
+            if not symbol:
+                print("\n❌ Please enter a stock symbol.")
+            else:
+                company = get_company_data(symbol)
+
+                if company:
+                    print(
+                        f"\nCompany: {company['name']}"
+                    )
+                    show_risk_analysis(company)
+                else:
+                    print(
+                        "\n❌ Could not retrieve company data."
+                    )
+
+        elif choice == "8":
             print("\nReturning to Main Menu...")
             break
 
         else:
             print(
-                "\n❌ Invalid option. Please choose 1-7."
+                "\n❌ Invalid option. Please choose 1-8."
             )
