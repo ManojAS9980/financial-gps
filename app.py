@@ -211,13 +211,14 @@ if search_button or symbol:
     # TABS
     # --------------------------------------------------
 
-    overview_tab, financials_tab, risk_tab = st.tabs(
-        [
-            "📊 Overview",
-            "💰 Financials",
-            "🛡️ Risk & Health"
-        ]
-    )
+    overview_tab, financials_tab, risk_tab, compare_tab = st.tabs(
+    [
+        "📊 Overview",
+        "💰 Financials",
+        "🛡️ Risk & Health",
+        "⚖️ Compare"
+    ]
+)
 
 
     # ==================================================
@@ -617,15 +618,349 @@ if search_button or symbol:
             "Financial GPS uses publicly available market data "
             "for educational analysis."
         )
+        # ==================================================
+# COMPANY COMPARISON TAB
+# ==================================================
+
+with compare_tab:
+
+    st.markdown(
+        '<div class="section-title">'
+        'Company Comparison'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.write(
+        "Compare two companies using the same financial metrics."
+    )
+
+    compare_col1, compare_col2 = st.columns(2)
+
+    with compare_col1:
+
+        symbol_1 = st.text_input(
+            "Company 1",
+            value="TCS.NS"
+        ).strip().upper()
+
+    with compare_col2:
+
+        symbol_2 = st.text_input(
+            "Company 2",
+            value="INFY.NS"
+        ).strip().upper()
+
+    compare_button = st.button(
+        "⚖️ Compare Companies",
+        use_container_width=True
+    )
+
+    if compare_button:
+
+        with st.spinner("Fetching company data..."):
+
+            company_1 = get_company_data(symbol_1)
+            company_2 = get_company_data(symbol_2)
+
+        if company_1 is None or company_2 is None:
+
+            st.error(
+                "Could not retrieve data for one or both companies. "
+                "Check the stock symbols."
+            )
+
+        else:
+
+            st.markdown("---")
+
+            st.subheader("📊 Comparison")
+
+            st.caption(
+                f"{company_1.get('name', symbol_1)} vs "
+                f"{company_2.get('name', symbol_2)}"
+            )
+
+            st.markdown("### Market Data")
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.markdown("**Metric**")
+
+            with col2:
+                st.markdown(
+                    f"**{company_1.get('name', symbol_1)}**"
+                )
+
+            with col3:
+                st.markdown(
+                    f"**{company_2.get('name', symbol_2)}**"
+                )
+
+
+            # --------------------------------------------------
+            # HELPER FOR COMPARISON ROWS
+            # --------------------------------------------------
+
+            def comparison_row(
+                label,
+                value_1,
+                value_2
+            ):
+
+                c1, c2, c3 = st.columns(3)
+
+                with c1:
+                    st.write(label)
+
+                with c2:
+                    st.write(value_1)
+
+                with c3:
+                    st.write(value_2)
+
+
+            # --------------------------------------------------
+            # BASIC DATA
+            # --------------------------------------------------
+
+            price_1 = company_1.get("price")
+            price_2 = company_2.get("price")
+
+            market_cap_1 = company_1.get("market_cap")
+            market_cap_2 = company_2.get("market_cap")
+
+            eps_1 = company_1.get("eps")
+            eps_2 = company_2.get("eps")
+
+            pe_1 = company_1.get("pe_ratio")
+            pe_2 = company_2.get("pe_ratio")
+
+
+            comparison_row(
+                "Current Price",
+                (
+                    f"{company_1.get('price_symbol', '')}"
+                    f"{price_1:,.2f}"
+                    if price_1 is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('price_symbol', '')}"
+                    f"{price_2:,.2f}"
+                    if price_2 is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Market Cap",
+                format_large_number(
+                    market_cap_1,
+                    company_1.get("price_symbol", "")
+                ),
+                format_large_number(
+                    market_cap_2,
+                    company_2.get("price_symbol", "")
+                )
+            )
+
+
+            comparison_row(
+                "Trailing EPS",
+                (
+                    f"{company_1.get('financial_symbol', '')}"
+                    f"{eps_1:,.2f}"
+                    if eps_1 is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('financial_symbol', '')}"
+                    f"{eps_2:,.2f}"
+                    if eps_2 is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Trailing P/E",
+                (
+                    f"{pe_1:.2f}"
+                    if pe_1 is not None
+                    else "N/A"
+                ),
+                (
+                    f"{pe_2:.2f}"
+                    if pe_2 is not None
+                    else "N/A"
+                )
+            )
+
+
+            st.markdown("### 📈 Financial Metrics")
+
+
+            comparison_row(
+                "ROE",
+                (
+                    f"{company_1.get('roe'):.2f}%"
+                    if company_1.get("roe") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('roe'):.2f}%"
+                    if company_2.get("roe") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "ROCE",
+                (
+                    f"{company_1.get('roce'):.2f}%"
+                    if company_1.get("roce") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('roce'):.2f}%"
+                    if company_2.get("roce") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Debt / Equity",
+                (
+                    f"{company_1.get('debt_to_equity'):.2f}"
+                    if company_1.get("debt_to_equity") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('debt_to_equity'):.2f}"
+                    if company_2.get("debt_to_equity") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Revenue Growth",
+                (
+                    f"{company_1.get('revenue_growth'):.2f}%"
+                    if company_1.get("revenue_growth") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('revenue_growth'):.2f}%"
+                    if company_2.get("revenue_growth") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Profit Growth",
+                (
+                    f"{company_1.get('profit_growth'):.2f}%"
+                    if company_1.get("profit_growth") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('profit_growth'):.2f}%"
+                    if company_2.get("profit_growth") is not None
+                    else "N/A"
+                )
+            )
+
+
+            st.markdown("### 💰 Financial Position")
+
+
+            comparison_row(
+                "Revenue",
+                (
+                    f"{company_1.get('financial_symbol', '')}"
+                    f"{company_1.get('revenue'):,.0f}"
+                    if company_1.get("revenue") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('financial_symbol', '')}"
+                    f"{company_2.get('revenue'):,.0f}"
+                    if company_2.get("revenue") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Net Income",
+                (
+                    f"{company_1.get('financial_symbol', '')}"
+                    f"{company_1.get('net_income'):,.0f}"
+                    if company_1.get("net_income") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('financial_symbol', '')}"
+                    f"{company_2.get('net_income'):,.0f}"
+                    if company_2.get("net_income") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Total Debt",
+                (
+                    f"{company_1.get('financial_symbol', '')}"
+                    f"{company_1.get('total_debt'):,.0f}"
+                    if company_1.get("total_debt") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('financial_symbol', '')}"
+                    f"{company_2.get('total_debt'):,.0f}"
+                    if company_2.get("total_debt") is not None
+                    else "N/A"
+                )
+            )
+
+
+            comparison_row(
+                "Equity",
+                (
+                    f"{company_1.get('financial_symbol', '')}"
+                    f"{company_1.get('equity'):,.0f}"
+                    if company_1.get("equity") is not None
+                    else "N/A"
+                ),
+                (
+                    f"{company_2.get('financial_symbol', '')}"
+                    f"{company_2.get('equity'):,.0f}"
+                    if company_2.get("equity") is not None
+                    else "N/A"
+                )
+            )
+
+
+            st.info(
+                "This comparison presents financial data for "
+                "educational research. It does not provide a "
+                "personalized investment recommendation."
+            )
 
 
 # --------------------------------------------------
 # DEFAULT MESSAGE
-# --------------------------------------------------
+# --------------------------------------------------else:
 
-else:
-
-    st.info(
+st.info(
         "👈 Enter a company symbol in the sidebar "
         "to begin your research."
     )
