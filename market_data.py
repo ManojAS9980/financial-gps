@@ -427,3 +427,86 @@ def get_price_history(symbol, period="1y"):
         )
 
         return None
+    
+def get_historical_financials(symbol):
+     """
+     Fetch historical annual Revenue, Net Income, and EBIT.
+     Returns a pandas DataFrame.
+     """
+
+     try:
+        ticker = yf.Ticker(symbol)
+
+        income = ticker.financials
+
+        if income is None or income.empty:
+            return None
+
+        financial_data = {}
+
+        metrics = {
+            "Revenue": [
+                "Total Revenue",
+                "Operating Revenue"
+            ],
+            "Net Income": [
+                "Net Income",
+                "Net Income Common Stockholders"
+            ],
+            "EBIT": [
+                "EBIT",
+                "Operating Income"
+            ]
+        }
+
+        for metric_name, possible_names in metrics.items():
+
+            found = False
+
+            for name in possible_names:
+
+                if name in income.index:
+
+                    row = income.loc[name]
+
+                    values = {}
+
+                    for date, value in row.items():
+
+                        try:
+                            numeric_value = float(value)
+
+                            if numeric_value == numeric_value:
+                                year = date.strftime("%Y")
+                                values[year] = numeric_value
+
+                        except (TypeError, ValueError, AttributeError):
+                            continue
+
+                    if values:
+                        financial_data[metric_name] = values
+
+                    found = True
+                    break
+
+            if not found:
+                financial_data[metric_name] = {}
+
+        if not any(financial_data.values()):
+            return None
+
+        import pandas as pd
+
+        df = pd.DataFrame(financial_data)
+
+        df = df.sort_index()
+
+        return df
+
+     except Exception as e:
+
+        print(
+            f"Error fetching historical financials: {e}"
+        )
+
+        return None

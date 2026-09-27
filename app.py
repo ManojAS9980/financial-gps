@@ -1,5 +1,9 @@
 import streamlit as st
-from market_data import get_company_data, get_price_history
+from market_data import (
+    get_company_data,
+    get_price_history,
+    get_historical_financials
+)
 def format_large_number(value, currency_symbol=""):
     """
     Convert large numbers into a compact readable format.
@@ -313,6 +317,77 @@ if search_button or symbol:
 
         st.warning(
             "Historical price data could not be retrieved."
+        )
+            # ==================================================
+    # HISTORICAL FINANCIAL PERFORMANCE
+    # ==================================================
+
+    st.markdown("---")
+
+    st.subheader("📊 Historical Financial Performance")
+
+    historical_financials = get_historical_financials(symbol)
+
+    if historical_financials is not None:
+
+        chart_col1, chart_col2, chart_col3 = st.columns(3)
+
+        with chart_col1:
+
+            st.markdown("### Revenue")
+
+            if "Revenue" in historical_financials.columns:
+
+                st.line_chart(
+                    historical_financials["Revenue"],
+                    height=300
+                )
+
+            else:
+
+                st.info("Revenue data unavailable.")
+
+        with chart_col2:
+
+            st.markdown("### Net Income")
+
+            if "Net Income" in historical_financials.columns:
+
+                st.line_chart(
+                    historical_financials["Net Income"],
+                    height=300
+                )
+
+            else:
+
+                st.info("Net Income data unavailable.")
+
+        with chart_col3:
+
+            st.markdown("### EBIT")
+
+            if "EBIT" in historical_financials.columns:
+
+                st.line_chart(
+                    historical_financials["EBIT"],
+                    height=300
+                )
+
+            else:
+
+                st.info("EBIT data unavailable.")
+
+        st.markdown("### 📋 Historical Financial Data")
+
+        st.dataframe(
+            historical_financials,
+            use_container_width=True
+        )
+
+    else:
+
+        st.warning(
+            "Historical financial data could not be retrieved."
         )
 
 
