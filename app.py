@@ -42,30 +42,118 @@ st.set_page_config(
 # CUSTOM STYLING
 # --------------------------------------------------
 
+ # --------------------------------------------------
+# CUSTOM STYLING
+# --------------------------------------------------
+
 st.markdown(
     """
     <style>
+
+    /* Main page */
+
     .main {
         padding-top: 1rem;
     }
 
+    /* Financial GPS title */
+
     .gps-title {
-        font-size: 42px;
-        font-weight: 700;
+        font-size: 46px;
+        font-weight: 800;
+        letter-spacing: -1px;
         margin-bottom: 0;
     }
 
     .gps-subtitle {
         font-size: 18px;
-        opacity: 0.75;
-        margin-bottom: 25px;
+        opacity: 0.70;
+        margin-top: 4px;
+        margin-bottom: 30px;
     }
 
+    /* Section headings */
+
     .section-title {
-        font-size: 24px;
-        font-weight: 600;
+        font-size: 26px;
+        font-weight: 700;
         margin-top: 20px;
+        margin-bottom: 15px;
     }
+
+    /* Metric cards */
+
+    div[data-testid="stMetric"] {
+        background: linear-gradient(
+            145deg,
+            rgba(40, 40, 55, 0.95),
+            rgba(20, 20, 30, 0.95)
+        );
+
+        border: 1px solid rgba(255, 255, 255, 0.08);
+
+        border-radius: 14px;
+
+        padding: 18px 20px;
+
+        min-height: 125px;
+
+        box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.25);
+
+        transition:
+            transform 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    div[data-testid="stMetric"]:hover {
+        transform: translateY(-3px);
+
+        border-color: rgba(120, 180, 255, 0.35);
+    }
+
+    /* Metric labels */
+
+    div[data-testid="stMetricLabel"] {
+        font-size: 14px;
+        font-weight: 600;
+        opacity: 0.70;
+    }
+
+    /* Metric values */
+
+    div[data-testid="stMetricValue"] {
+        font-size: 30px;
+        font-weight: 750;
+    }
+
+    /* Buttons */
+
+    .stButton > button {
+        border-radius: 10px;
+        font-weight: 600;
+        min-height: 44px;
+    }
+
+    /* Text inputs */
+
+    div[data-baseweb="input"] {
+        border-radius: 10px;
+    }
+
+    /* Dataframes */
+
+    div[data-testid="stDataFrame"] {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Alerts / information boxes */
+
+    div[data-testid="stAlert"] {
+        border-radius: 12px;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
