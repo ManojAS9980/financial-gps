@@ -1,5 +1,26 @@
 import streamlit as st
 from market_data import get_company_data, get_price_history
+def format_large_number(value, currency_symbol=""):
+    """
+    Convert large numbers into a compact readable format.
+    """
+
+    if value is None:
+        return "N/A"
+
+    if abs(value) >= 1_000_000_000_000:
+        return f"{currency_symbol}{value / 1_000_000_000_000:.2f}T"
+
+    if abs(value) >= 1_000_000_000:
+        return f"{currency_symbol}{value / 1_000_000_000:.2f}B"
+
+    if abs(value) >= 1_000_000:
+        return f"{currency_symbol}{value / 1_000_000:.2f}M"
+
+    if abs(value) >= 1_000:
+        return f"{currency_symbol}{value / 1_000:.2f}K"
+
+    return f"{currency_symbol}{value:,.2f}"
 
 
 # --------------------------------------------------
@@ -152,13 +173,13 @@ if search_button or symbol:
             st.metric("Current Price", "N/A")
 
     with col2:
-        if market_cap is not None:
             st.metric(
-                "Market Cap",
-                f"{price_symbol}{market_cap:,.0f}"
-            )
-        else:
-            st.metric("Market Cap", "N/A")
+             "Market Cap",
+               format_large_number(
+                market_cap,
+                price_symbol
+        )
+    )
 
     with col3:
         if eps is not None:
