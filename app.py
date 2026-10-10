@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from market_data import (
     get_company_data,
@@ -273,7 +274,8 @@ with col3:
 
         st.metric(
             "Trailing EPS",
-            f"{financial_symbol}{eps:,.2f}"
+             f"{price_symbol}{eps:,.2f}"
+        
         )
 
     else:
@@ -888,7 +890,6 @@ with risk_tab:
         "for educational analysis."
     )
 
-
 # ============================================================
 # COMPANY COMPARISON TAB
 # ============================================================
@@ -903,392 +904,354 @@ with compare_tab:
     )
 
     st.write(
-        "Compare two companies using the same financial metrics."
+        "Compare two companies using financial and market data."
     )
 
+    st.caption(
+        "Enter two stock symbols to compare their reported metrics."
+    )
+
+    # --------------------------------------------------------
+    # COMPANY INPUTS
+    # --------------------------------------------------------
 
     compare_col1, compare_col2 = st.columns(2)
-
 
     with compare_col1:
 
         symbol_1 = st.text_input(
-            "Company 1",
-            value="TCS.NS"
+            "First Company",
+            value="TCS.NS",
+            key="compare_symbol_1"
         ).strip().upper()
-
 
     with compare_col2:
 
         symbol_2 = st.text_input(
-            "Company 2",
-            value="INFY.NS"
+            "Second Company",
+            value="INFY.NS",
+            key="compare_symbol_2"
         ).strip().upper()
-
 
     compare_button = st.button(
         "⚖️ Compare Companies",
         use_container_width=True
     )
 
+    # --------------------------------------------------------
+    # FETCH COMPANY DATA
+    # --------------------------------------------------------
 
     if compare_button:
 
-        with st.spinner(
-            "Fetching company data..."
-        ):
+        if not symbol_1 or not symbol_2:
 
-            company_1 = get_company_data(symbol_1)
-            company_2 = get_company_data(symbol_2)
+            st.error("Please enter both company symbols.")
 
+        elif symbol_1 == symbol_2:
 
-        if company_1 is None or company_2 is None:
-
-            st.error(
-                "Could not retrieve data for one or both "
-                "companies. Check the stock symbols."
+            st.warning(
+                "Enter two different symbols to compare companies."
             )
-
 
         else:
 
-            st.markdown("---")
+            with st.spinner("Fetching company data..."):
 
-            st.subheader("📊 Comparison")
+                company_1 = get_company_data(symbol_1)
+                company_2 = get_company_data(symbol_2)
 
-            st.caption(
-                f"{company_1.get('name', symbol_1)} vs "
-                f"{company_2.get('name', symbol_2)}"
-            )
+            if company_1 is None or company_2 is None:
 
-
-            # ------------------------------------------------
-            # COMPARISON HELPER
-            # ------------------------------------------------
-
-            def comparison_row(
-                label,
-                value_1,
-                value_2
-            ):
-
-                c1, c2, c3 = st.columns(3)
-
-
-                with c1:
-
-                    st.write(label)
-
-
-                with c2:
-
-                    st.write(value_1)
-
-
-                with c3:
-
-                    st.write(value_2)
-
-
-            # ------------------------------------------------
-            # HEADER
-            # ------------------------------------------------
-
-            st.markdown("### Market Data")
-
-
-            header_1, header_2, header_3 = st.columns(3)
-
-
-            with header_1:
-
-                st.markdown("**Metric**")
-
-
-            with header_2:
-
-                st.markdown(
-                    f"**{company_1.get('name', symbol_1)}**"
+                st.error(
+                    "Could not retrieve data for one or both companies. "
+                    "Check the symbols and try again."
                 )
 
+            else:
 
-            with header_3:
+                name_1 = company_1.get("name", symbol_1)
+                name_2 = company_2.get("name", symbol_2)
 
-                st.markdown(
-                    f"**{company_2.get('name', symbol_2)}**"
-                )
+                st.markdown("---")
 
+                st.subheader("📊 Comparison Results")
 
-            # ------------------------------------------------
-            # MARKET DATA
-            # ------------------------------------------------
+                # ------------------------------------------------
+                # FORMATTING HELPER
+                # ------------------------------------------------
 
-            price_1 = company_1.get("price")
-            price_2 = company_2.get("price")
+                def comparison_value(
+                    data,
+                    key,
+                    currency_key=None,
+                    decimals=2,
+                    suffix=""
+                ):
 
-            market_cap_1 = company_1.get("market_cap")
-            market_cap_2 = company_2.get("market_cap")
+                    value = data.get(key)
 
-            eps_1 = company_1.get("eps")
-            eps_2 = company_2.get("eps")
+                    if value is None:
 
-            pe_1 = company_1.get("pe_ratio")
-            pe_2 = company_2.get("pe_ratio")
+                        return "N/A"
 
+                    prefix = ""
 
-            comparison_row(
-                "Current Price",
+                    if currency_key:
 
-                (
-                    f"{company_1.get('price_symbol', '')}"
-                    f"{price_1:,.2f}"
-                    if price_1 is not None
-                    else "N/A"
-                ),
+                        prefix = data.get(currency_key, "")
 
-                (
-                    f"{company_2.get('price_symbol', '')}"
-                    f"{price_2:,.2f}"
-                    if price_2 is not None
-                    else "N/A"
-                )
-            )
-
-
-            comparison_row(
-                "Market Cap",
-
-                format_large_number(
-                    market_cap_1,
-                    company_1.get(
-                        "price_symbol",
-                        ""
+                    return (
+                        f"{prefix}{value:,.{decimals}f}{suffix}"
                     )
-                ),
 
-                format_large_number(
-                    market_cap_2,
-                    company_2.get(
-                        "price_symbol",
-                        ""
-                    )
+                # ------------------------------------------------
+                # MARKET DATA
+                # ------------------------------------------------
+
+                st.markdown("### 💹 Market Data")
+
+                market_rows = [
+                    [
+                        "Current Price",
+                        comparison_value(
+                            company_1,
+                            "price",
+                            "price_symbol"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "price",
+                            "price_symbol"
+                        )
+                    ],
+                    [
+                        "Market Cap",
+                        format_large_number(
+                            company_1.get("market_cap"),
+                            company_1.get("price_symbol", "")
+                        ),
+                        format_large_number(
+                            company_2.get("market_cap"),
+                            company_2.get("price_symbol", "")
+                        )
+                    ],
+                    [
+                      "Trailing EPS",
+                       comparison_value(company_1, "eps", "price_symbol"),
+                       comparison_value(company_2, "eps", "price_symbol")                           
+                    ],
+                    [
+                        "Trailing P/E",
+                        comparison_value(
+                            company_1,
+                            "pe_ratio"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "pe_ratio"
+                        )
+                    ]
+                ]
+
+                market_df = pd.DataFrame(
+                    market_rows,
+                    columns=[
+                        "Metric",
+                        name_1,
+                        name_2
+                    ]
                 )
-            )
 
-
-            comparison_row(
-                "Trailing EPS",
-
-                (
-                    f"{company_1.get('financial_symbol', '')}"
-                    f"{eps_1:,.2f}"
-                    if eps_1 is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('financial_symbol', '')}"
-                    f"{eps_2:,.2f}"
-                    if eps_2 is not None
-                    else "N/A"
+                st.dataframe(
+                    market_df,
+                    use_container_width=True,
+                    hide_index=True
                 )
-            )
 
+                # ------------------------------------------------
+                # FINANCIAL METRICS
+                # ------------------------------------------------
 
-            comparison_row(
-                "Trailing P/E",
+                st.markdown("### 📈 Financial Metrics")
 
-                (
-                    f"{pe_1:.2f}"
-                    if pe_1 is not None
-                    else "N/A"
-                ),
+                financial_metric_rows = [
+                    [
+                        "Return on Equity (ROE)",
+                        comparison_value(
+                            company_1,
+                            "roe",
+                            suffix="%"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "roe",
+                            suffix="%"
+                        )
+                    ],
+                    [
+                        "Return on Capital Employed (ROCE)",
+                        comparison_value(
+                            company_1,
+                            "roce",
+                            suffix="%"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "roce",
+                            suffix="%"
+                        )
+                    ],
+                    [
+                        "Debt / Equity",
+                        comparison_value(
+                            company_1,
+                            "debt_to_equity"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "debt_to_equity"
+                        )
+                    ],
+                    [
+                        "Revenue Growth",
+                        comparison_value(
+                            company_1,
+                            "revenue_growth",
+                            suffix="%"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "revenue_growth",
+                            suffix="%"
+                        )
+                    ],
+                    [
+                        "Profit Growth",
+                        comparison_value(
+                            company_1,
+                            "profit_growth",
+                            suffix="%"
+                        ),
+                        comparison_value(
+                            company_2,
+                            "profit_growth",
+                            suffix="%"
+                        )
+                    ]
+                ]
 
-                (
-                    f"{pe_2:.2f}"
-                    if pe_2 is not None
-                    else "N/A"
+                metrics_df = pd.DataFrame(
+                    financial_metric_rows,
+                    columns=[
+                        "Metric",
+                        name_1,
+                        name_2
+                    ]
                 )
-            )
 
-
-            # ------------------------------------------------
-            # FINANCIAL METRICS
-            # ------------------------------------------------
-
-            st.markdown("### 📈 Financial Metrics")
-
-
-            comparison_row(
-                "ROE",
-
-                (
-                    f"{company_1.get('roe'):.2f}%"
-                    if company_1.get("roe") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('roe'):.2f}%"
-                    if company_2.get("roe") is not None
-                    else "N/A"
+                st.dataframe(
+                    metrics_df,
+                    use_container_width=True,
+                    hide_index=True
                 )
-            )
 
+                # ------------------------------------------------
+                # FINANCIAL POSITION
+                # ------------------------------------------------
 
-            comparison_row(
-                "ROCE",
+                st.markdown("### 💰 Financial Position")
 
-                (
-                    f"{company_1.get('roce'):.2f}%"
-                    if company_1.get("roce") is not None
-                    else "N/A"
-                ),
+                position_rows = [
+                    [
+                        "Revenue",
+                        comparison_value(
+                            company_1,
+                            "revenue",
+                            "financial_symbol",
+                            decimals=0
+                        ),
+                        comparison_value(
+                            company_2,
+                            "revenue",
+                            "financial_symbol",
+                            decimals=0
+                        )
+                    ],
+                    [
+                        "Net Income",
+                        comparison_value(
+                            company_1,
+                            "net_income",
+                            "financial_symbol",
+                            decimals=0
+                        ),
+                        comparison_value(
+                            company_2,
+                            "net_income",
+                            "financial_symbol",
+                            decimals=0
+                        )
+                    ],
+                    [
+                        "Total Debt",
+                        comparison_value(
+                            company_1,
+                            "total_debt",
+                            "financial_symbol",
+                            decimals=0
+                        ),
+                        comparison_value(
+                            company_2,
+                            "total_debt",
+                            "financial_symbol",
+                            decimals=0
+                        )
+                    ],
+                    [
+                        "Equity",
+                        comparison_value(
+                            company_1,
+                            "equity",
+                            "financial_symbol",
+                            decimals=0
+                        ),
+                        comparison_value(
+                            company_2,
+                            "equity",
+                            "financial_symbol",
+                            decimals=0
+                        )
+                    ]
+                ]
 
-                (
-                    f"{company_2.get('roce'):.2f}%"
-                    if company_2.get("roce") is not None
-                    else "N/A"
+                position_df = pd.DataFrame(
+                    position_rows,
+                    columns=[
+                        "Metric",
+                        name_1,
+                        name_2
+                    ]
                 )
-            )
 
-
-            comparison_row(
-                "Debt / Equity",
-
-                (
-                    f"{company_1.get('debt_to_equity'):.2f}"
-                    if company_1.get("debt_to_equity") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('debt_to_equity'):.2f}"
-                    if company_2.get("debt_to_equity") is not None
-                    else "N/A"
+                st.dataframe(
+                    position_df,
+                    use_container_width=True,
+                    hide_index=True
                 )
-            )
 
+                # ------------------------------------------------
+                # DATA NOTES
+                # ------------------------------------------------
 
-            comparison_row(
-                "Revenue Growth",
-
-                (
-                    f"{company_1.get('revenue_growth'):.2f}%"
-                    if company_1.get("revenue_growth") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('revenue_growth'):.2f}%"
-                    if company_2.get("revenue_growth") is not None
-                    else "N/A"
+                st.info(
+                    "Financial GPS is an educational research tool, "
+                    "not a source of personalized investment advice."
                 )
-            )
 
-
-            comparison_row(
-                "Profit Growth",
-
-                (
-                    f"{company_1.get('profit_growth'):.2f}%"
-                    if company_1.get("profit_growth") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('profit_growth'):.2f}%"
-                    if company_2.get("profit_growth") is not None
-                    else "N/A"
+                st.caption(
+                    "Financial statement values use each company's "
+                    "reported financial currency. Check the currencies "
+                    "before comparing monetary amounts across companies. "
+                    "Growth figures use the available reported periods."
                 )
-            )
-
-
-            # ------------------------------------------------
-            # FINANCIAL POSITION
-            # ------------------------------------------------
-
-            st.markdown("### 💰 Financial Position")
-
-
-            comparison_row(
-                "Revenue",
-
-                (
-                    f"{company_1.get('financial_symbol', '')}"
-                    f"{company_1.get('revenue'):,.0f}"
-                    if company_1.get("revenue") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('financial_symbol', '')}"
-                    f"{company_2.get('revenue'):,.0f}"
-                    if company_2.get("revenue") is not None
-                    else "N/A"
-                )
-            )
-
-
-            comparison_row(
-                "Net Income",
-
-                (
-                    f"{company_1.get('financial_symbol', '')}"
-                    f"{company_1.get('net_income'):,.0f}"
-                    if company_1.get("net_income") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('financial_symbol', '')}"
-                    f"{company_2.get('net_income'):,.0f}"
-                    if company_2.get("net_income") is not None
-                    else "N/A"
-                )
-            )
-
-
-            comparison_row(
-                "Total Debt",
-
-                (
-                    f"{company_1.get('financial_symbol', '')}"
-                    f"{company_1.get('total_debt'):,.0f}"
-                    if company_1.get("total_debt") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('financial_symbol', '')}"
-                    f"{company_2.get('total_debt'):,.0f}"
-                    if company_2.get("total_debt") is not None
-                    else "N/A"
-                )
-            )
-
-
-            comparison_row(
-                "Equity",
-
-                (
-                    f"{company_1.get('financial_symbol', '')}"
-                    f"{company_1.get('equity'):,.0f}"
-                    if company_1.get("equity") is not None
-                    else "N/A"
-                ),
-
-                (
-                    f"{company_2.get('financial_symbol', '')}"
-                    f"{company_2.get('equity'):,.0f}"
-                    if company_2.get("equity") is not None
-                    else "N/A"
-                )
-            )
-
-
-            st.info(
-                "This comparison presents financial data for "
-                "educational research. It does not provide a "
-                "personalized investment recommendation."
-            )
