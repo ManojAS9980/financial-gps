@@ -33,6 +33,26 @@ def format_large_number(value, currency_symbol=""):
         return f"{currency_symbol}{value / 1_000:.2f}K"
 
     return f"{currency_symbol}{value:,.2f}"
+def comparison_value(
+    data,
+    key,
+    currency_key=None,
+    decimals=2,
+    suffix=""
+):
+    """Format a financial metric for the comparison table."""
+
+    value = data.get(key)
+
+    if value is None:
+        return "N/A"
+
+    prefix = ""
+
+    if currency_key:
+        prefix = data.get(currency_key, "")
+
+    return f"{prefix}{value:,.{decimals}f}{suffix}"
 
 
 # ============================================================
@@ -1068,190 +1088,227 @@ with compare_tab:
                     use_container_width=True,
                     hide_index=True
                 )
+                # ------------------------------------------------
+
 
                 # ------------------------------------------------
                 # FINANCIAL METRICS
                 # ------------------------------------------------
 
-                st.markdown("### 📈 Financial Metrics")
+            st.markdown("### 📈 Financial Metrics")
 
-                financial_metric_rows = [
-                    [
-                        "Return on Equity (ROE)",
-                        comparison_value(
-                            company_1,
-                            "roe",
-                            suffix="%"
-                        ),
-                        comparison_value(
-                            company_2,
-                            "roe",
-                            suffix="%"
+            financial_metric_rows = [
+                                [
+                                    "Return on Equity (ROE)",
+                                    comparison_value(
+                                        company_1,
+                                        "roe",
+                                        suffix="%"
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "roe",
+                                        suffix="%"
+                                    )
+                                ],
+                                [
+                                    "Return on Capital Employed (ROCE)",
+                                    comparison_value(
+                                        company_1,
+                                        "roce",
+                                        suffix="%"
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "roce",
+                                        suffix="%"
+                                    )
+                                ],
+                                [
+                                    "Debt / Equity",
+                                    comparison_value(
+                                        company_1,
+                                        "debt_to_equity"
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "debt_to_equity"
+                                    )
+                                ],
+                                [
+                                    "Revenue Growth",
+                                    comparison_value(
+                                        company_1,
+                                        "revenue_growth",
+                                        suffix="%"
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "revenue_growth",
+                                        suffix="%"
+                                    )
+                                ],
+                                [
+                                    "Profit Growth",
+                                    comparison_value(
+                                        company_1,
+                                        "profit_growth",
+                                        suffix="%"
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "profit_growth",
+                                        suffix="%"
+                                    )
+                                ]
+                            ]
+
+            metrics_df = pd.DataFrame(
+                                financial_metric_rows,
+                                columns=[
+                                    "Metric",
+                                    name_1,
+                                    name_2
+                                ]
+                            )
+
+            st.dataframe(
+                                metrics_df,
+                                use_container_width=True,
+                                hide_index=True
+                            )
+
+                            # ------------------------------------------------
+                            # FINANCIAL POSITION
+                            # ------------------------------------------------
+
+            st.markdown("### 💰 Financial Position")
+
+            position_rows = [
+                                [
+                                    "Revenue",
+                                    comparison_value(
+                                        company_1,
+                                        "revenue",
+                                        "financial_symbol",
+                                        decimals=0
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "revenue",
+                                        "financial_symbol",
+                                        decimals=0
+                                    )
+                                ],
+                                [
+                                    "Net Income",
+                                    comparison_value(
+                                        company_1,
+                                        "net_income",
+                                        "financial_symbol",
+                                        decimals=0
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "net_income",
+                                        "financial_symbol",
+                                        decimals=0
+                                    )
+                                ],
+                                [
+                                    "Total Debt",
+                                    comparison_value(
+                                        company_1,
+                                        "total_debt",
+                                        "financial_symbol",
+                                        decimals=0
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "total_debt",
+                                        "financial_symbol",
+                                        decimals=0
+                                    )
+                                ],
+                                [
+                                    "Equity",
+                                    comparison_value(
+                                        company_1,
+                                        "equity",
+                                        "financial_symbol",
+                                        decimals=0
+                                    ),
+                                    comparison_value(
+                                        company_2,
+                                        "equity",
+                                        "financial_symbol",
+                                        decimals=0
+                                    )
+                                ]
+                            ]
+
+            position_df = pd.DataFrame(
+                                position_rows,
+                                columns=[
+                                    "Metric",
+                                    name_1,
+                                    name_2
+                                ]
+                            )
+
+            st.dataframe(
+                                position_df,
+                                use_container_width=True,
+                                hide_index=True
+                            )
+                        # VISUAL METRIC COMPARISON
+
+            st.markdown("### 📊 Visual Metric Comparison")
+
+            st.caption(
+                            "Compare profitability and growth metrics side by side."
                         )
-                    ],
-                    [
-                        "Return on Capital Employed (ROCE)",
-                        comparison_value(
-                            company_1,
-                            "roce",
-                            suffix="%"
-                        ),
-                        comparison_value(
-                            company_2,
-                            "roce",
-                            suffix="%"
+
+            chart_data = pd.DataFrame({
+                            "Metric": [
+                                "ROE",
+                                "ROCE",
+                                "Revenue Growth",
+                                "Profit Growth"
+                            ],
+                            name_1: [
+                                company_1.get("roe"),
+                                company_1.get("roce"),
+                                company_1.get("revenue_growth"),
+                                company_1.get("profit_growth")
+                            ],
+                            name_2: [
+                                company_2.get("roe"),
+                                company_2.get("roce"),
+                                company_2.get("revenue_growth"),
+                                company_2.get("profit_growth")
+                            ]
+                        })
+
+            chart_data = chart_data.set_index("Metric")
+
+            st.bar_chart(
+                            chart_data,
+                            height=400
                         )
-                    ],
-                    [
-                        "Debt / Equity",
-                        comparison_value(
-                            company_1,
-                            "debt_to_equity"
-                        ),
-                        comparison_value(
-                            company_2,
-                            "debt_to_equity"
-                        )
-                    ],
-                    [
-                        "Revenue Growth",
-                        comparison_value(
-                            company_1,
-                            "revenue_growth",
-                            suffix="%"
-                        ),
-                        comparison_value(
-                            company_2,
-                            "revenue_growth",
-                            suffix="%"
-                        )
-                    ],
-                    [
-                        "Profit Growth",
-                        comparison_value(
-                            company_1,
-                            "profit_growth",
-                            suffix="%"
-                        ),
-                        comparison_value(
-                            company_2,
-                            "profit_growth",
-                            suffix="%"
-                        )
-                    ]
-                ]
 
-                metrics_df = pd.DataFrame(
-                    financial_metric_rows,
-                    columns=[
-                        "Metric",
-                        name_1,
-                        name_2
-                    ]
-                )
+                            # ------------------------------------------------
+                            # DATA NOTES
+                            # ------------------------------------------------
 
-                st.dataframe(
-                    metrics_df,
-                    use_container_width=True,
-                    hide_index=True
-                )
+            st.info(
+                                "Financial GPS is an educational research tool, "
+                                "not a source of personalized investment advice."
+                            )
 
-                # ------------------------------------------------
-                # FINANCIAL POSITION
-                # ------------------------------------------------
-
-                st.markdown("### 💰 Financial Position")
-
-                position_rows = [
-                    [
-                        "Revenue",
-                        comparison_value(
-                            company_1,
-                            "revenue",
-                            "financial_symbol",
-                            decimals=0
-                        ),
-                        comparison_value(
-                            company_2,
-                            "revenue",
-                            "financial_symbol",
-                            decimals=0
-                        )
-                    ],
-                    [
-                        "Net Income",
-                        comparison_value(
-                            company_1,
-                            "net_income",
-                            "financial_symbol",
-                            decimals=0
-                        ),
-                        comparison_value(
-                            company_2,
-                            "net_income",
-                            "financial_symbol",
-                            decimals=0
-                        )
-                    ],
-                    [
-                        "Total Debt",
-                        comparison_value(
-                            company_1,
-                            "total_debt",
-                            "financial_symbol",
-                            decimals=0
-                        ),
-                        comparison_value(
-                            company_2,
-                            "total_debt",
-                            "financial_symbol",
-                            decimals=0
-                        )
-                    ],
-                    [
-                        "Equity",
-                        comparison_value(
-                            company_1,
-                            "equity",
-                            "financial_symbol",
-                            decimals=0
-                        ),
-                        comparison_value(
-                            company_2,
-                            "equity",
-                            "financial_symbol",
-                            decimals=0
-                        )
-                    ]
-                ]
-
-                position_df = pd.DataFrame(
-                    position_rows,
-                    columns=[
-                        "Metric",
-                        name_1,
-                        name_2
-                    ]
-                )
-
-                st.dataframe(
-                    position_df,
-                    use_container_width=True,
-                    hide_index=True
-                )
-
-                # ------------------------------------------------
-                # DATA NOTES
-                # ------------------------------------------------
-
-                st.info(
-                    "Financial GPS is an educational research tool, "
-                    "not a source of personalized investment advice."
-                )
-
-                st.caption(
-                    "Financial statement values use each company's "
-                    "reported financial currency. Check the currencies "
-                    "before comparing monetary amounts across companies. "
-                    "Growth figures use the available reported periods."
-                )
+            st.caption(
+                                "Financial statement values use each company's "
+                                "reported financial currency. Check the currencies "
+                                "before comparing monetary amounts across companies. "
+                                "Growth figures use the available reported periods."
+                            )
