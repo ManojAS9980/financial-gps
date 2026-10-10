@@ -1293,8 +1293,9 @@ with compare_tab:
             chart_data = chart_data.set_index("Metric")
 
             st.bar_chart(
-                            chart_data,
-                            height=400
+                               chart_data,
+                               height=400,
+                               stack=False
                         )
 
                             # ------------------------------------------------
